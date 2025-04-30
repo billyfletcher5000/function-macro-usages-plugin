@@ -9,7 +9,7 @@
     <Description>d3t Function Macro Usages Plugin</Description>
 
     <Authors>Billy Fletcher</Authors>
-    <Copyright>Copyright $([System.DateTime]::Now.Year) d3t co ltd</Copyright>
+    <Copyright>Copyright $([System.DateTime]::Now.Year) d3t ltd</Copyright>
     <PackageTags>resharper plugin</PackageTags>
 
     <PackageProjectUrl></PackageProjectUrl>

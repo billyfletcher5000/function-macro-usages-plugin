@@ -68,8 +68,13 @@ class FunctionMacroFindUsagesContextSearch : FindUsagesContextSearch
       }
     }
 
-    IList<IDeclaredElement> additionalElements = CppResolveEntityDeclaredElement.CreateWrappers(elementsList[0].GetPsiServices(), additionalFunctions);
-    return additionalElements.Select<IDeclaredElement, DeclaredElementInstance>((Func<IDeclaredElement, DeclaredElementInstance>) (e => new DeclaredElementInstance(e)));
+    if (services != null)
+    {
+      IList<IDeclaredElement> additionalElements = CppResolveEntityDeclaredElement.CreateWrappers(services, additionalFunctions);
+      return additionalElements.Select<IDeclaredElement, DeclaredElementInstance>((Func<IDeclaredElement, DeclaredElementInstance>)(e => new DeclaredElementInstance(e)));
+    }
+
+    return new List<DeclaredElementInstance>();
   }
 
   public override bool IsContextApplicable(IDataContext dataContext)
