@@ -14,6 +14,7 @@ NuGetLocks/
 *.user
 *.sln.docstates
 *.cache
+*.log
 
 # IDEs
 /.idea/*.iml
