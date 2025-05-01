@@ -23,6 +23,7 @@ class FunctionMacroFindUsagesContextSearch : FindUsagesContextSearch
     ReferencePreferenceKind kind,
     bool updateOnly)
   {
+    return new List<DeclaredElementInstance>();
     IEnumerable<IDeclaredElement> elements = CppContextSearchUtil.GetDeclaredElements(context, kind);
     List<IDeclaredElement> elementsList = elements.ToList();
     List<ICppResolveEntity> additionalFunctions = new List<ICppResolveEntity>();
