@@ -39,12 +39,16 @@ public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryB
                     if (pack != null)
                     {
                         string childName = child.Name.ToString();
-                        CppSmallEnumerable<CppGroupedFunctionDeclaratorResolveEntity> groupedFunctions = pack.GetGroupedFunctions();
-
+                        
                         if (macroFunctionNames.Contains(childName))
                         {
-                            foreach (CppGroupedFunctionDeclaratorResolveEntity groupedFunction in groupedFunctions)
+                            CppSmallEnumerable<CppGroupedFunctionDeclaratorResolveEntity> groupedFunctions = pack.GetGroupedFunctions();
+
+                            foreach (CppGroupedFunctionDeclaratorResolveEntity groupedFunction in pack.GetGroupedFunctions())
                                 additionalFunctions.Add(groupedFunction);
+                            
+                            foreach (ICppMutableFunctionTemplateDeclaratorResolveEntity funcTemplate in pack.GetFunctionTemplates())
+                                additionalFunctions.Add(funcTemplate);
                         }
                     }
                 }
