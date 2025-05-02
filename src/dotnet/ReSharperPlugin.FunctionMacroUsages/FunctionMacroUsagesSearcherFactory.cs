@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Application.Parts;
+using JetBrains.Application.Settings;
 using JetBrains.ReSharper.Feature.Services.Cpp.DeclaredElements;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Cpp;
@@ -15,6 +16,13 @@ namespace ReSharperPlugin.ContextActions;
 [PsiComponent(Instantiation.DemandAnyThreadSafe)]
 public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryBase
 {
+    private readonly ISettingsStore mySettingsStore;
+    
+    public FunctionMacroUsagesSearcherFactory(ISettingsStore settingsStore)
+    {
+        mySettingsStore = settingsStore;
+    }
+    
     public override IEnumerable<RelatedDeclaredElement> GetRelatedDeclaredElements(IDeclaredElement element)
     {
         List<ICppResolveEntity> additionalFunctions = new List<ICppResolveEntity>();
@@ -22,6 +30,9 @@ public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryB
         if (fromDeclaredElement != null)
         {
             string baseElementName = fromDeclaredElement.Name.ToString();
+            
+            IContextBoundSettingsStore boundSettingsStore = mySettingsStore.BindToContextTransient(ContextRange.ApplicationWide);
+            FunctionMacroUsagesSettings settings = boundSettingsStore.GetKey<FunctionMacroUsagesSettings>(SettingsOptimization.OptimizeDefault);
         
             HashSet<string> macroFunctionNames = new HashSet<string>();
             macroFunctionNames.Add($"Get{baseElementName}");
@@ -42,8 +53,7 @@ public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryB
                         
                         if (macroFunctionNames.Contains(childName))
                         {
-                            CppSmallEnumerable<CppGroupedFunctionDeclaratorResolveEntity> groupedFunctions = pack.GetGroupedFunctions();
-
+                            pack.getgr
                             foreach (CppGroupedFunctionDeclaratorResolveEntity groupedFunction in pack.GetGroupedFunctions())
                                 additionalFunctions.Add(groupedFunction);
                             
