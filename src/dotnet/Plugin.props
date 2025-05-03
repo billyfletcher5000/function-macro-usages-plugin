@@ -1,20 +1,20 @@
 ﻿<Project>
 
-  <PropertyGroup>
-    <!-- See https://www.nuget.org/packages/JetBrains.ReSharper.SDK -->
-    <!-- Keep in sync with ProductVersion in gradle.properties -->
-    <SdkVersion>2025.1.0</SdkVersion>
+    <PropertyGroup>
+        <!-- See https://www.nuget.org/packages/JetBrains.ReSharper.SDK -->
+        <!-- Keep in sync with ProductVersion in gradle.properties -->
+        <SdkVersion>2025.1.0</SdkVersion>
 
-    <Title>FunctionMacroUsages</Title>
-    <Description>d3t Function Macro Usages Plugin</Description>
+        <Title>FunctionMacroUsages</Title>
+        <Description>d3t Function Macro Usages Plugin</Description>
 
-    <Authors>Billy Fletcher</Authors>
-    <Copyright>Copyright $([System.DateTime]::Now.Year) d3t ltd</Copyright>
-    <PackageTags>resharper plugin</PackageTags>
+        <Authors>Billy Fletcher</Authors>
+        <Copyright>Copyright $([System.DateTime]::Now.Year) d3t ltd</Copyright>
+        <PackageTags>resharper plugin</PackageTags>
 
-    <PackageProjectUrl></PackageProjectUrl>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageIconUrl></PackageIconUrl>
-  </PropertyGroup>
+        <PackageProjectUrl></PackageProjectUrl>
+        <PackageLicenseUrl></PackageLicenseUrl>
+        <PackageIconUrl></PackageIconUrl>
+    </PropertyGroup>
 
 </Project>
