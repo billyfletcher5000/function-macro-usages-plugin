@@ -1,11 +1,9 @@
 using JetBrains.Application.BuildScript.Application.Zones;
 using JetBrains.ReSharper.Psi;
 
-namespace ReSharperPlugin.ContextActions;
+namespace ReSharperPlugin.FunctionMacroUsages;
 
 [ZoneDefinition]
-// [ZoneDefinitionConfigurableFeature("Title", "Description", IsInProductSection: false)]
-public interface IContextActionsZone : IZone,
-    IRequire<ILanguageCppZone>
+public interface IContextActionsZone : IZone, IRequire<ILanguageCppZone>
 {
 }

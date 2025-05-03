@@ -14,15 +14,13 @@ using JetBrains.Util.Logging;
 
 namespace ReSharperPlugin.FunctionMacroUsages
 {
-    [SettingsKey(
-        typeof(CodeInspectionSettings),
-        "Function Macro Usages Plugin Settings")]
+    [SettingsKey(typeof(CodeInspectionSettings), "Function Macro Usages Plugin Settings")]
     public class FunctionMacroUsagesSettings
     {
-        [SettingsEntry(SearchPatternDefaultValue, "Macro Search Patterns")]
-        public string MacroSearchPatterns;
+        [SettingsEntry(SearchPatternDefaultValue, "Search Patterns")]
+        public string SearchPatterns;
 
-        private const string SearchPatternDefaultValue = "<FunctionMacroUsagesSearchEntrySettings>\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Get{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Set{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Update{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n</FunctionMacroUsagesSearchEntrySettings>";
+        private const string SearchPatternDefaultValue = "<FunctionMacroUsagesSearchEntrySettings>\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Get{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"GetRef{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Set{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Update{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n</FunctionMacroUsagesSearchEntrySettings>";
     }
 
     public class FunctionMacroUsagesSearchEntrySetting
@@ -35,9 +33,10 @@ namespace ReSharperPlugin.FunctionMacroUsages
         public readonly bool SearchVariables;
         public readonly bool SearchVariableTemplates;
 
-        public FunctionMacroUsagesSearchEntrySetting(string searchPattern, bool searchFunctions,
-            bool searchFunctionTemplates, bool searchVariables, bool searchVariableTemplates, bool searchTypeAliases,
-            bool searchTypeAliasTemplates)
+        public FunctionMacroUsagesSearchEntrySetting(string searchPattern, 
+            bool searchFunctions, bool searchFunctionTemplates, 
+            bool searchVariables, bool searchVariableTemplates, 
+            bool searchTypeAliases, bool searchTypeAliasTemplates)
         {
             SearchPattern = searchPattern;
             SearchFunctions = searchFunctions;
@@ -78,11 +77,11 @@ namespace ReSharperPlugin.FunctionMacroUsages
 
     public class FunctionMacroUsagesModel
     {
-        private readonly Lifetime myLifetime;
+        private readonly Lifetime _lifetime;
 
-        [NotNull] private readonly GroupingEvent mySaveRequested;
+        [NotNull] private readonly GroupingEvent _saveRequested;
 
-        [NotNull] private readonly OptionsSettingsSmartContext mySmartContext;
+        [NotNull] private readonly OptionsSettingsSmartContext _smartContext;
 
         public FunctionMacroUsagesModel(
             Lifetime lifetime,
@@ -90,9 +89,9 @@ namespace ReSharperPlugin.FunctionMacroUsages
             IThreading threading,
             string eventId = "FunctionMacroUsagesOptionsPage.Event")
         {
-            myLifetime = lifetime;
-            mySmartContext = smartContext;
-            mySaveRequested = threading.GroupingEvents[Rgc.Invariant]
+            _lifetime = lifetime;
+            _smartContext = smartContext;
+            _saveRequested = threading.GroupingEvents[Rgc.Invariant]
                 .CreateEvent(lifetime, eventId, TimeSpan.FromMilliseconds(100.0), Save);
             Entries = new ListEvents<SearchEntry>("FunctionMacroUsagesModel.Entries");
             SelectedEntry = new Property<SearchEntry>("FunctionMacroUsagesModel.SelectedEntry");
@@ -105,13 +104,13 @@ namespace ReSharperPlugin.FunctionMacroUsages
 
         public void Reset()
         {
-            var lifetime = myLifetime;
+            var lifetime = _lifetime;
             Entries.Clear();
-            var list = FunctionMacroUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(mySmartContext);
+            var list = FunctionMacroUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(_smartContext);
             foreach (FunctionMacroUsagesSearchEntrySetting entrySetting in list)
             {
                 Entries.Add(new SearchEntry(lifetime,
-                    mySaveRequested.Incoming,
+                    _saveRequested.Incoming,
                     entrySetting.SearchPattern,
                     entrySetting.SearchFunctions,
                     entrySetting.SearchFunctionTemplates,
@@ -122,12 +121,12 @@ namespace ReSharperPlugin.FunctionMacroUsages
             }
 
             SelectedEntry.Value = null;
-            Entries.AddRemove.Advise_NoAcknowledgement(lifetime, mySaveRequested.Incoming.Fire);
+            Entries.AddRemove.Advise_NoAcknowledgement(lifetime, _saveRequested.Incoming.Fire);
         }
         
         public SearchEntry GetNewSearchEntry(int index)
         {
-            return new SearchEntry(myLifetime, mySaveRequested.Incoming);
+            return new SearchEntry(_lifetime, _saveRequested.Incoming);
         }
 
         public bool CanBeRemoved(int index)
@@ -161,7 +160,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
                     entry.SearchTypeAliases.Value, entry.SearchTypeAliasTemplates.Value));
             }
 
-            FunctionMacroUsagesSearchEntrySettingKeyAccessor.SetSearchEntrySettings(mySmartContext, entrySettings);
+            FunctionMacroUsagesSearchEntrySettingKeyAccessor.SetSearchEntrySettings(_smartContext, entrySettings);
         }
 
         public class SearchEntry
@@ -216,10 +215,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
         private const string SearchTypeAliases = "SearchTypeAliases";
         private const string SearchTypeAliasTemplates = "SearchTypeAliasTemplates";
 
-        public static XElement StringToXml(string value)
-        {
-            return XElement.Parse(value);
-        }
+        public const string RegexPattern = "(?i){Foo}";
 
         public static XElement SettingToXml(FunctionMacroUsagesSearchEntrySetting setting)
         {
@@ -328,7 +324,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
         {
             return FunctionMacroUsagesSettingUtil.StringToFunctionMacroUsagesSearchEntrySettings(
                 store.GetValue<FunctionMacroUsagesSettings, string>(
-                    (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.MacroSearchPatterns)));
+                    (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.SearchPatterns)));
         }
 
         public static void SetSearchEntrySettings(
@@ -337,7 +333,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
         {
             string str = FunctionMacroUsagesSettingUtil.FunctionMacroUsagesSearchEntrySettingsToString(categories);
             store.SetValue<FunctionMacroUsagesSettings, string>(
-                (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.MacroSearchPatterns), str);
+                (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.SearchPatterns), str);
         }
     }
 

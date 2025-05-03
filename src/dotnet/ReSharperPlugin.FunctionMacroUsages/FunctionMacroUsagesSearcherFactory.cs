@@ -16,11 +16,11 @@ namespace ReSharperPlugin.ContextActions;
 [PsiComponent(Instantiation.DemandAnyThreadSafe)]
 public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryBase
 {
-    private readonly ISettingsStore mySettingsStore;
+    private readonly ISettingsStore _settingsStore;
 
     public FunctionMacroUsagesSearcherFactory(ISettingsStore settingsStore)
     {
-        mySettingsStore = settingsStore;
+        _settingsStore = settingsStore;
     }
 
     public override IEnumerable<RelatedDeclaredElement> GetRelatedDeclaredElements(IDeclaredElement element)
@@ -31,9 +31,9 @@ public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryB
         {
             var baseElementName = fromDeclaredElement.Name.ToString();
 
-            var boundSettingsStore = mySettingsStore.BindToContextTransient(ContextRange.ApplicationWide);
+            var boundSettingsStore = _settingsStore.BindToContextTransient(ContextRange.ApplicationWide);
             var searchEntrySettings = FunctionMacroUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(boundSettingsStore);
-            Regex regex = new Regex("(?i){Foo}");
+            Regex regex = new Regex(FunctionMacroUsagesSettingUtil.RegexPattern);
 
             var classResolveEntity = fromDeclaredElement.GetEnclosingClass(true);
             if (classResolveEntity != null)
@@ -41,8 +41,7 @@ public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryB
                 var children = classResolveEntity.GetChildren();
                 foreach (var child in children)
                 {
-                    var pack = child as CppDeclaratorResolveEntityPack;
-                    if (pack != null)
+                    if (child is CppDeclaratorResolveEntityPack pack)
                     {
                         var childName = child.Name.ToString();
 

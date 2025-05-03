@@ -9,13 +9,13 @@ using NUnit.Framework;
 
 [assembly: Apartment(ApartmentState.STA)]
 
-namespace ReSharperPlugin.ContextActions.Tests;
+namespace ReSharperPlugin.FunctionMacroUsages.Tests;
 
 [ZoneDefinition]
-public class ContextActionsTestEnvironmentZone : ITestsEnvZone, IRequire<PsiFeatureTestZone>, IRequire<IContextActionsZone> { }
+public class FunctionMacroUsagesTestEnvironmentZone : ITestsEnvZone, IRequire<PsiFeatureTestZone>, IRequire<IContextActionsZone> { }
 
 [ZoneMarker]
-public class ZoneMarker : IRequire<ICodeEditingZone>, IRequire<ILanguageCSharpZone>, IRequire<ContextActionsTestEnvironmentZone> { }
+public class ZoneMarker : IRequire<ICodeEditingZone>, IRequire<ILanguageCSharpZone>, IRequire<FunctionMacroUsagesTestEnvironmentZone> { }
 
 [SetUpFixture]
-public class ContextActionsTestsAssembly : ExtensionTestEnvironmentAssembly<ContextActionsTestEnvironmentZone> { }
+public class FunctionMacroUsagesTestsAssembly : ExtensionTestEnvironmentAssembly<FunctionMacroUsagesTestEnvironmentZone> { }
