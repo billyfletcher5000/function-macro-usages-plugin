@@ -339,12 +339,15 @@ namespace ReSharperPlugin.FunctionMacroUsages
 
     public static class Strings
     {
-        public const string SearchPattern_Text = "Search Pattern,1.5*";
-        public const string SearchFunctions_Text = "Functions,1*";
-        public const string SearchFunctionTemplates_Text = "Function Templates,1*";
-        public const string SearchVariables_Text = "Variables,1*";
-        public const string SearchVariableTemplates_Text = "Variable Templates,1*";
-        public const string SearchTypeAliases_Text = "Type Aliases,1*";
-        public const string SearchTypeAliasTemplates_Text = "Type Alias Templates,1*";
+        public static class ColumnText
+        {
+            public const string SearchPattern = "Search Pattern,1.5*";
+            public const string SearchFunctions = "Functions,1*";
+            public const string SearchFunctionTemplates = "Function Templates,1*";
+            public const string SearchVariables = "Variables,1*";
+            public const string SearchVariableTemplates = "Variable Templates,1*";
+            public const string SearchTypeAliases = "Type Aliases,1*";
+            public const string SearchTypeAliasTemplates = "Type Alias Templates,1*";
+        }
     }
 }
