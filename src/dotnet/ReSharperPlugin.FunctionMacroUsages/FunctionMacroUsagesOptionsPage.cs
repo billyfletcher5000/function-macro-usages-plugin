@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
+
 using JetBrains.Application.Threading;
-using JetBrains.Application.UI.Controls.FileSystem;
 using JetBrains.Application.UI.Options;
 using JetBrains.Application.UI.Options.OptionsDialog;
+using JetBrains.Core;
 using JetBrains.DataFlow;
 using JetBrains.IDE.UI;
 using JetBrains.IDE.UI.Extensions;
@@ -11,89 +10,92 @@ using JetBrains.IDE.UI.Extensions.Properties;
 using JetBrains.IDE.UI.Extensions.Validation;
 using JetBrains.IDE.UI.Options;
 using JetBrains.Lifetimes;
-using JetBrains.ReSharper.Feature.Services.Cpp.Options;
-using JetBrains.ReSharper.Feature.Services.Daemon.OptionPages;
-using JetBrains.ReSharper.Feature.Services.UI.Validation;
-using JetBrains.ReSharper.UnitTestFramework.Resources;
+using JetBrains.ReSharper.Feature.Services.Cpp.CodeStyle.IncludesOrder;
+using JetBrains.ReSharper.Feature.Services.Daemon;
 using JetBrains.Rider.Model;
 using JetBrains.Rider.Model.UIAutomation;
 using JetBrains.UI.RichText;
 using JetBrains.Util.Media;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+using JetBrains.ReSharper.Feature.Services.Cpp.Options;
+using JetBrains.ReSharper.Feature.Services.Daemon.OptionPages;
+using JetBrains.ReSharper.Feature.Services.UI.Validation;
+using JetBrains.ReSharper.UnitTestFramework.Resources;
 
-namespace ReSharperPlugin.ContextActions;
-
-
-[OptionsPage(PID, PageTitle, typeof(UnitTestingThemedIcons.Session),
-    ParentId = CodeInspectionPage.PID)]
-public class FunctionMacroUsagesOptionsPage : BeSimpleOptionsPage
+#nullable disable
+namespace ReSharperPlugin.FunctionMacroUsages
 {
-    private const string PID = nameof(FunctionMacroUsagesOptionsPage);
-    private const string PageTitle = "Function Macro Usages";
-
-    private readonly Lifetime _lifetime;
-
-    public FunctionMacroUsagesOptionsPage(Lifetime lifetime,
-        OptionsPageContext optionsPageContext,
-        OptionsSettingsSmartContext optionsSettingsSmartContext,
-        IconHostBase iconHost,
-        ICommonFileDialogs dialogs)
-        : base(lifetime, optionsPageContext, optionsSettingsSmartContext)
+  [OptionsPage(FunctionMacroUsagesOptionsPage.PID, "Function Macro Usages", typeof (UnitTestingThemedIcons.Session), ParentId = CppOptionsPage.PID)]
+  public class FunctionMacroUsagesOptionsPage : BeSimpleOptionsPage
+  {
+    private const string PID = "FunctionMacroUsagesOptions";
+    private static readonly Func<string, bool> ourValidateRegex = (Func<string, bool>) (pattern =>
     {
-        _lifetime = lifetime;
+      try
+      {
+        Regex regex = new Regex("(?i){Foo}", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        return regex.Match(pattern).Success;
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    });
 
-        // Add additional search keywords
-        AddKeyword("Sample", "Example", "Preferences"); // TODO: only works for ReSharper?
-
-        AddText("This is a sample options page that works likewise in ReSharper and Rider.");
-        AddSpacer();
-        AddText($"It allows to view and manipulate values in the {nameof(FunctionMacroUsagesSettings)} class.");
-        AddCommentText("Values are saved in a .dotSettings file.");
-
-        AddHeader("Basic Options");
-        AddIntOption()
+    public FunctionMacroUsagesOptionsPage(
+      Lifetime lifetime,
+      OptionsPageContext optionsPageContext,
+      OptionsSettingsSmartContext smartContext,
+      IconHostBase iconHost,
+      HighlightingSettingsManager manager,
+      IThreading threading)
+      : base(lifetime, optionsPageContext, smartContext, true)
+    {
+      AddHeader("Search Patterns");
+      AddControl(GetSearchEntryTable(lifetime, smartContext, iconHost, threading).WithDescription("Search Entries", lifetime, GridOrientation.Vertical), true);
     }
-    
-    private BeControl GetIncludeCategoriesTable(
+
+    private BeControl GetSearchEntryTable(
       Lifetime lifetime,
       OptionsSettingsSmartContext smartContext,
       IconHostBase iconHost,
       IThreading threading)
     {
-      BeMargin margin = BeMargins.Create((BeMarginType.OnePx, 6), (BeMarginType.OnePx, 4), (BeMarginType.None, 0), (BeMarginType.OnePx, 2));
-      IncludeCategoriesModel model = new IncludeCategoriesModel(lifetime, smartContext, threading);
-      BeToolbar selectionListWithToolbar = model.SelectedEntry.GetBeSingleSelectionListWithToolbar<IncludeCategoriesModel.IEntry>((IListEvents<IncludeCategoriesModel.IEntry>) model.Entries, lifetime, (PresentListLine<IncludeCategoriesModel.IEntry>) ((entryLt, entry, properties) =>
+      BeMargin margin = BeMargins.Create((BeMarginType.OnePx, 6), (BeMarginType.OnePx, 4), (BeMarginType.None, 0), (BeMarginType.OnePx, 2)); 
+      FunctionMacroUsagesModel model = new FunctionMacroUsagesModel(lifetime, smartContext, threading);
+      BeToolbar selectionListWithToolbar = model.SelectedEntry.GetBeSingleSelectionListWithToolbar<FunctionMacroUsagesModel.SearchEntry>((IListEvents<FunctionMacroUsagesModel.SearchEntry>) model.Entries, lifetime, (PresentListLine<FunctionMacroUsagesModel.SearchEntry>) ((entryLt, entry, properties) =>
       {
-        switch (entry)
-        {
-          case IncludeCategoriesModel.SeparatorEntry _:
             return new List<BeControl>()
             {
-              new JetBrains.UI.RichText.RichText(JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.BlankLine_Text, new TextStyle(JetFontStyles.Italic, JetRgbaColors.Gray)).GetBeRichText().WithMargin(margin),
-              BeControls.GetSpacer().WithMargin(margin)
+              (BeControl) entry.SearchPattern.GetBeTextBox(entryLt).WithValidationRule<BeTextBox, string>(entryLt, FunctionMacroUsagesOptionsPage.ourValidateRegex, "Missing {Foo} placeholder in search pattern!").WithTextNotEmpty<BeTextBox>(entryLt, (IconModel) null),
+              (BeControl) entry.SearchFunctions.GetBeCheckBox(entryLt, ""),
+              (BeControl) entry.SearchFunctionTemplates.GetBeCheckBox(entryLt, ""),
+              (BeControl) entry.SearchVariables.GetBeCheckBox(entryLt, ""),
+              (BeControl) entry.SearchVariableTemplates.GetBeCheckBox(entryLt, ""),
+              (BeControl) entry.SearchTypeAliases.GetBeCheckBox(entryLt, ""),
+              (BeControl) entry.SearchTypeAliasTemplates.GetBeCheckBox(entryLt, ""),
             };
-          case IncludeCategoriesModel.IncludeCategoryEntry includeCategoryEntry2:
-            return new List<BeControl>()
-            {
-              (BeControl) includeCategoryEntry2.Pattern.GetBeTextBox(entryLt).WithValidationRule<BeTextBox, string>(entryLt, CppIncludesOrderPage.ourValidateRegex, JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.InvalidRegularExpression_Text).WithTextNotEmpty<BeTextBox>(entryLt, (IconModel) null),
-              (BeControl) includeCategoryEntry2.Description.GetBeTextBox(entryLt)
-            };
-          case IncludeCategoriesModel.SpecialHeaderEntry specialHeaderEntry2:
-            return new List<BeControl>()
-            {
-              new JetBrains.UI.RichText.RichText(specialHeaderEntry2.Pattern.Value, new TextStyle(JetFontStyles.Italic, JetRgbaColors.Gray)).GetBeRichText().WithMargin(margin),
-              new JetBrains.UI.RichText.RichText(specialHeaderEntry2.Description.Value, new TextStyle(JetFontStyles.Italic, JetRgbaColors.Gray)).GetBeRichText().WithMargin(margin)
-            };
-          default:
-            throw new ArgumentException(entry.GetType().ToString());
-        }
-      }), (IIconHost) iconHost, new string[2]
+      }), (IIconHost) iconHost, new string[7]
       {
-        JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.RegexPattern_Text,
-        JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.Description_Text
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchPattern_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchFunctions_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchFunctionTemplates_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchVariables_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchVariableTemplates_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchTypeAliases_Text,
+        ReSharperPlugin.FunctionMacroUsages.Strings.SearchTypeAliasTemplates_Text
       });
       this.Reload.Advise<Unit>(lifetime, (Action) (() => model.Reset()));
-      Func<int, IncludeCategoriesModel.IEntry> getNewElement = (Func<int, IncludeCategoriesModel.IEntry>) (i => model.GetNewIncludeCategoryEntry(i));
-      string addPatternText = JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings._AddPattern_Text;
-      return (BeControl) selectionListWithToolbar.AddButtonWithListAction<IncludeCategoriesModel.IEntry>(BeListAddAction.ADD_AFTER_SELECTED, getNewElement, style: BeButtonStyle.DEFAULT, customTooltip: addPatternText).AddButtonWithListAction<IncludeCategoriesModel.IEntry>(BeListAddAction.ADD_AFTER_SELECTED, (Func<int, IncludeCategoriesModel.IEntry>) (i => model.GetNewSeparatorCategoryEntry(i)), style: BeButtonStyle.DEFAULT, customTooltip: JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.Add_blankLine_Text).AddButtonWithListAction<IncludeCategoriesModel.IEntry>(BeListAction.REMOVE, canExecute: (Func<int, bool>) (i => model.CanBeRemoved(i)), customTooltip: JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings._Remove_Text, style: BeButtonStyle.DEFAULT).AddButtonWithListAction<IncludeCategoriesModel.IEntry>(BeListAction.MOVE_UP, canExecute: (Func<int, bool>) (i => model.CanMoveUp(i)), customTooltip: JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.Move_Up_Text, style: BeButtonStyle.DEFAULT).AddButtonWithListAction<IncludeCategoriesModel.IEntry>(BeListAction.MOVE_DOWN, canExecute: (Func<int, bool>) (i => model.CanMoveDown(i)), customTooltip: JetBrains.ReSharper.Feature.Services.Cpp.Resources.Strings.Move_Down_Text, style: BeButtonStyle.DEFAULT);
+      Func<int, FunctionMacroUsagesModel.SearchEntry> getNewElement = (Func<int, FunctionMacroUsagesModel.SearchEntry>) (i => model.GetNewSearchEntry(i));
+      string addPatternText = "Add Search Pattern";
+      return (BeControl) selectionListWithToolbar
+          .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAddAction.ADD, getNewElement, style: BeButtonStyle.DEFAULT, customTooltip: addPatternText)
+          .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.REMOVE, canExecute: (Func<int, bool>) (i => model.CanBeRemoved(i)), customTooltip: "Remove a search entry", style: BeButtonStyle.DEFAULT)
+          .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.MOVE_UP, canExecute: (Func<int, bool>) (i => model.CanMoveUp(i)), customTooltip: "Move a search entry up", style: BeButtonStyle.DEFAULT)
+          .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.MOVE_DOWN, canExecute: (Func<int, bool>) (i => model.CanMoveDown(i)), customTooltip: "Move a search entry down", style: BeButtonStyle.DEFAULT);
     }
+  }
 }

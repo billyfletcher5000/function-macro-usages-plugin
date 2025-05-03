@@ -12,4 +12,14 @@
 ]]>
   </description>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- https://plugins.jetbrains.com/docs/intellij/settings-guide.html#values-for-parent-id-attribute -->
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.d3t.rider.plugins.usages.options.FunctionMacroUsagesOptionsPage"
+                id="FunctionMacroUsagesOptions"
+                bundle="messages.OptionPagesBundle"
+                key="configurable.name.optionpages.options.title" />
+    </extensions>
+
 </idea-plugin>

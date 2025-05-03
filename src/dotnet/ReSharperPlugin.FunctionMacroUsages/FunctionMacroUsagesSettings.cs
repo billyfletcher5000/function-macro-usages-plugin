@@ -1,63 +1,354 @@
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Xml.Linq;
+using JetBrains.Annotations;
 using JetBrains.Application.Settings;
+using JetBrains.Application.Threading;
+using JetBrains.Application.UI.Options;
+using JetBrains.DataFlow;
+using JetBrains.Lifetimes;
 using JetBrains.ReSharper.Resources.Settings;
+using JetBrains.Threading;
+using JetBrains.Util.Logging;
 
-namespace ReSharperPlugin.ContextActions;
-
-[SettingsKey(
-    Parent: typeof(CodeInspectionSettings),
-    Description: "Function Macro Usages Plugin Settings")]
-public class FunctionMacroUsagesSettings
+namespace ReSharperPlugin.FunctionMacroUsages
 {
-    [SettingsEntry("","Macro Search Patterns")]
-    public IIndexedEntry<GuidIndex, FunctionMacroUsagesSearchEntrySettings> MacroSearchPatterns;
-}
-
-public class FunctionMacroUsagesSearchEntrySettings
-{
-    public readonly string SearchPattern;
-    public readonly bool SearchFunctions = true;
-    public readonly bool SearchFunctionTemplates = true;
-    public readonly bool SearchVariables = false;
-    public readonly bool SearchVariableTemplates = false;
-    public readonly bool SearchTypeAliases = false;
-    public readonly bool SearchTypeAliasTemplates = false;
-
-    public FunctionMacroUsagesSearchEntrySettings(string searchPattern, bool searchFunctions, bool searchFunctionTemplates, bool searchVariables, bool searchVariableTemplates, bool searchTypeAliases, bool searchTypeAliasTemplates)
+    [SettingsKey(
+        typeof(CodeInspectionSettings),
+        "Function Macro Usages Plugin Settings")]
+    public class FunctionMacroUsagesSettings
     {
-        this.SearchPattern = searchPattern;
-        this.SearchFunctions = searchFunctions;
-        this.SearchFunctionTemplates = searchFunctionTemplates;
-        this.SearchVariables = searchVariables;
-        this.SearchVariableTemplates = searchVariableTemplates;
-        this.SearchTypeAliases = searchTypeAliases;
-        this.SearchTypeAliasTemplates = searchTypeAliasTemplates;
+        [SettingsEntry(SearchPatternDefaultValue, "Macro Search Patterns")]
+        public string MacroSearchPatterns;
+
+        private const string SearchPatternDefaultValue = "<FunctionMacroUsagesSearchEntrySettings>\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Get{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Set{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n  <FunctionMacroUsagesSearchEntrySetting SearchPattern=\"Update{Foo}\" SearchFunctions=\"True\" SearchFunctionTemplates=\"True\" SearchVariables=\"False\" SearchVariableTemplates=\"False\" SearchTypeAliases=\"False\" SearchTypeAliasTemplates=\"False\" />\r\n</FunctionMacroUsagesSearchEntrySettings>";
     }
 
-    public override bool Equals(object obj)
+    public class FunctionMacroUsagesSearchEntrySetting
     {
-        return obj is FunctionMacroUsagesSearchEntrySettings includeCategorySetting
-               && this.SearchPattern.Equals(includeCategorySetting.SearchPattern)
-               && this.SearchFunctions.Equals(includeCategorySetting.SearchFunctions)
-               && this.SearchFunctionTemplates.Equals(includeCategorySetting.SearchFunctionTemplates)
-               && this.SearchVariables.Equals(includeCategorySetting.SearchVariables)
-               && this.SearchVariableTemplates.Equals(includeCategorySetting.SearchVariableTemplates)
-               && this.SearchTypeAliases.Equals(includeCategorySetting.SearchTypeAliases)
-               && this.SearchTypeAliasTemplates.Equals(includeCategorySetting.SearchTypeAliasTemplates);
-    }
+        public readonly string SearchPattern;
+        public readonly bool SearchFunctions;
+        public readonly bool SearchFunctionTemplates;
+        public readonly bool SearchTypeAliases;
+        public readonly bool SearchTypeAliasTemplates;
+        public readonly bool SearchVariables;
+        public readonly bool SearchVariableTemplates;
 
-    public override int GetHashCode()
-    {
-        unchecked
+        public FunctionMacroUsagesSearchEntrySetting(string searchPattern, bool searchFunctions,
+            bool searchFunctionTemplates, bool searchVariables, bool searchVariableTemplates, bool searchTypeAliases,
+            bool searchTypeAliasTemplates)
         {
-            var hashCode = (SearchPattern != null ? SearchPattern.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ SearchFunctions.GetHashCode();
-            hashCode = (hashCode * 397) ^ SearchFunctionTemplates.GetHashCode();
-            hashCode = (hashCode * 397) ^ SearchVariables.GetHashCode();
-            hashCode = (hashCode * 397) ^ SearchVariableTemplates.GetHashCode();
-            hashCode = (hashCode * 397) ^ SearchTypeAliases.GetHashCode();
-            hashCode = (hashCode * 397) ^ SearchTypeAliasTemplates.GetHashCode();
-            return hashCode;
+            SearchPattern = searchPattern;
+            SearchFunctions = searchFunctions;
+            SearchFunctionTemplates = searchFunctionTemplates;
+            SearchVariables = searchVariables;
+            SearchVariableTemplates = searchVariableTemplates;
+            SearchTypeAliases = searchTypeAliases;
+            SearchTypeAliasTemplates = searchTypeAliasTemplates;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is FunctionMacroUsagesSearchEntrySetting searchEntrySetting
+                   && SearchPattern.Equals(searchEntrySetting.SearchPattern)
+                   && SearchFunctions.Equals(searchEntrySetting.SearchFunctions)
+                   && SearchFunctionTemplates.Equals(searchEntrySetting.SearchFunctionTemplates)
+                   && SearchVariables.Equals(searchEntrySetting.SearchVariables)
+                   && SearchVariableTemplates.Equals(searchEntrySetting.SearchVariableTemplates)
+                   && SearchTypeAliases.Equals(searchEntrySetting.SearchTypeAliases)
+                   && SearchTypeAliasTemplates.Equals(searchEntrySetting.SearchTypeAliasTemplates);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = SearchPattern != null ? SearchPattern.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^ SearchFunctions.GetHashCode();
+                hashCode = (hashCode * 397) ^ SearchFunctionTemplates.GetHashCode();
+                hashCode = (hashCode * 397) ^ SearchVariables.GetHashCode();
+                hashCode = (hashCode * 397) ^ SearchVariableTemplates.GetHashCode();
+                hashCode = (hashCode * 397) ^ SearchTypeAliases.GetHashCode();
+                hashCode = (hashCode * 397) ^ SearchTypeAliasTemplates.GetHashCode();
+                return hashCode;
+            }
         }
     }
-}
 
+    public class FunctionMacroUsagesModel
+    {
+        private readonly Lifetime myLifetime;
+
+        [NotNull] private readonly GroupingEvent mySaveRequested;
+
+        [NotNull] private readonly OptionsSettingsSmartContext mySmartContext;
+
+        public FunctionMacroUsagesModel(
+            Lifetime lifetime,
+            [NotNull] OptionsSettingsSmartContext smartContext,
+            IThreading threading,
+            string eventId = "FunctionMacroUsagesOptionsPage.Event")
+        {
+            myLifetime = lifetime;
+            mySmartContext = smartContext;
+            mySaveRequested = threading.GroupingEvents[Rgc.Invariant]
+                .CreateEvent(lifetime, eventId, TimeSpan.FromMilliseconds(100.0), Save);
+            Entries = new ListEvents<SearchEntry>("FunctionMacroUsagesModel.Entries");
+            SelectedEntry = new Property<SearchEntry>("FunctionMacroUsagesModel.SelectedEntry");
+            Reset();
+        }
+
+        public ListEvents<SearchEntry> Entries { get; }
+
+        public IProperty<SearchEntry> SelectedEntry { get; }
+
+        public void Reset()
+        {
+            var lifetime = myLifetime;
+            Entries.Clear();
+            var list = FunctionMacroUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(mySmartContext);
+            foreach (FunctionMacroUsagesSearchEntrySetting entrySetting in list)
+            {
+                Entries.Add(new SearchEntry(lifetime,
+                    mySaveRequested.Incoming,
+                    entrySetting.SearchPattern,
+                    entrySetting.SearchFunctions,
+                    entrySetting.SearchFunctionTemplates,
+                    entrySetting.SearchVariables,
+                    entrySetting.SearchVariableTemplates,
+                    entrySetting.SearchTypeAliases,
+                    entrySetting.SearchTypeAliasTemplates));
+            }
+
+            SelectedEntry.Value = null;
+            Entries.AddRemove.Advise_NoAcknowledgement(lifetime, mySaveRequested.Incoming.Fire);
+        }
+        
+        public SearchEntry GetNewSearchEntry(int index)
+        {
+            return new SearchEntry(myLifetime, mySaveRequested.Incoming);
+        }
+
+        public bool CanBeRemoved(int index)
+        {
+            if (index < 0 || index >= Entries.Count)
+                return false;
+
+            return true;
+        }
+
+        public bool CanMoveUp(int index)
+        {
+            return index > 0;
+        }
+
+        public bool CanMoveDown(int index)
+        {
+            return index < Entries.Count - 1;
+        }
+
+        private void Save()
+        {
+            List<FunctionMacroUsagesSearchEntrySetting> entrySettings =
+                new List<FunctionMacroUsagesSearchEntrySetting>();
+            foreach (SearchEntry entry in Entries)
+            {
+                entrySettings.Add(new FunctionMacroUsagesSearchEntrySetting(entry.SearchPattern.Value,
+                    entry.SearchFunctions.Value,
+                    entry.SearchFunctionTemplates.Value, entry.SearchVariables.Value,
+                    entry.SearchVariableTemplates.Value,
+                    entry.SearchTypeAliases.Value, entry.SearchTypeAliasTemplates.Value));
+            }
+
+            FunctionMacroUsagesSearchEntrySettingKeyAccessor.SetSearchEntrySettings(mySmartContext, entrySettings);
+        }
+
+        public class SearchEntry
+        {
+            public SearchEntry(
+                Lifetime lifetime,
+                [NotNull] ISimpleSignal saveRequested,
+                string searchPattern = "",
+                bool searchFunctions = true,
+                bool searchFunctionTemplates = true,
+                bool searchVariables = false,
+                bool searchVariableTemplates = false,
+                bool searchTypeAliases = false,
+                bool searchTypeAliasTemplates = false)
+            {
+                SearchPattern = new Property<string>("SearchEntry.SearchPattern", searchPattern ?? "");
+                SearchPattern.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchFunctions = new Property<bool>("SearchEntry.SearchFunctions", searchFunctions);
+                SearchFunctions.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchFunctionTemplates =
+                    new Property<bool>("SearchEntry.SearchFunctionTemplates", searchFunctionTemplates);
+                SearchFunctionTemplates.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchVariables = new Property<bool>("SearchEntry.SearchVariables", searchVariables);
+                SearchVariables.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchVariableTemplates =
+                    new Property<bool>("SearchEntry.SearchVariableTemplates", searchVariableTemplates);
+                SearchVariableTemplates.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchTypeAliases = new Property<bool>("SearchEntry.SearchTypeAliases", searchTypeAliases);
+                SearchTypeAliases.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+                SearchTypeAliasTemplates =
+                    new Property<bool>("SearchEntry.SearchTypeAliasTemplates", searchTypeAliasTemplates);
+                SearchTypeAliasTemplates.Change.Advise_NoAcknowledgement(lifetime, saveRequested.Fire);
+            }
+
+            public IProperty<string> SearchPattern { get; }
+            public IProperty<bool> SearchFunctions { get; }
+            public IProperty<bool> SearchFunctionTemplates { get; }
+            public IProperty<bool> SearchVariables { get; }
+            public IProperty<bool> SearchVariableTemplates { get; }
+            public IProperty<bool> SearchTypeAliases { get; }
+            public IProperty<bool> SearchTypeAliasTemplates { get; }
+        }
+    }
+
+    public class FunctionMacroUsagesSettingUtil
+    {
+        private const string SearchPattern = "SearchPattern";
+        private const string SearchFunctions = "SearchFunctions";
+        private const string SearchFunctionTemplates = "SearchFunctionTemplates";
+        private const string SearchVariables = "SearchVariables";
+        private const string SearchVariableTemplates = "SearchVariableTemplates";
+        private const string SearchTypeAliases = "SearchTypeAliases";
+        private const string SearchTypeAliasTemplates = "SearchTypeAliasTemplates";
+
+        public static XElement StringToXml(string value)
+        {
+            return XElement.Parse(value);
+        }
+
+        public static XElement SettingToXml(FunctionMacroUsagesSearchEntrySetting setting)
+        {
+            return new XElement((XName)"FunctionMacroUsagesSearchEntrySetting", new object[7]
+            {
+                (object)new XAttribute((XName)SearchPattern, (object)setting.SearchPattern),
+                (object)new XAttribute((XName)SearchFunctions, (object)setting.SearchFunctions.ToString()),
+                (object)new XAttribute((XName)SearchFunctionTemplates,
+                    (object)setting.SearchFunctionTemplates.ToString()),
+                (object)new XAttribute((XName)SearchVariables, (object)setting.SearchVariables.ToString()),
+                (object)new XAttribute((XName)SearchVariableTemplates,
+                    (object)setting.SearchVariableTemplates.ToString()),
+                (object)new XAttribute((XName)SearchTypeAliases, (object)setting.SearchTypeAliases.ToString()),
+                (object)new XAttribute((XName)SearchTypeAliasTemplates,
+                    (object)setting.SearchTypeAliasTemplates.ToString())
+            });
+        }
+
+        public static FunctionMacroUsagesSearchEntrySetting XmlToSetting(XElement element)
+        {
+            try
+            {
+                if (element == null)
+                    return (FunctionMacroUsagesSearchEntrySetting)null;
+
+                var searchPattern = element.Attribute((XName)SearchPattern)?.Value;
+                if (searchPattern == null)
+                    throw new ArgumentException(SearchPattern);
+
+                var searchFunctions = element.Attribute((XName)SearchFunctions)?.Value;
+                if (searchFunctions == null)
+                    throw new ArgumentException(SearchFunctions);
+
+                var searchFunctionTemplates = element.Attribute((XName)SearchFunctionTemplates)?.Value;
+                if (searchFunctionTemplates == null)
+                    throw new ArgumentException(SearchFunctionTemplates);
+
+                var searchVariables = element.Attribute((XName)SearchVariables)?.Value;
+                if (searchVariables == null)
+                    throw new ArgumentException(SearchVariables);
+
+                var searchVariableTemplates = element.Attribute((XName)SearchVariableTemplates)?.Value;
+                if (searchVariableTemplates == null)
+                    throw new ArgumentException(SearchVariableTemplates);
+
+                var searchTypeAliases = element.Attribute((XName)SearchTypeAliases)?.Value;
+                if (searchTypeAliases == null)
+                    throw new ArgumentException(SearchTypeAliases);
+
+                var searchTypeAliasTemplates = element.Attribute((XName)SearchTypeAliasTemplates)?.Value;
+                if (searchTypeAliasTemplates == null)
+                    throw new ArgumentException(SearchTypeAliasTemplates);
+
+                return new FunctionMacroUsagesSearchEntrySetting(searchPattern,
+                    bool.Parse(searchFunctions),
+                    bool.Parse(searchFunctionTemplates),
+                    bool.Parse(searchVariables),
+                    bool.Parse(searchVariableTemplates),
+                    bool.Parse(searchTypeAliases),
+                    bool.Parse(searchTypeAliasTemplates));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+                return (FunctionMacroUsagesSearchEntrySetting)null;
+            }
+        }
+
+        public static string FunctionMacroUsagesSearchEntrySettingsToString(
+            IEnumerable<FunctionMacroUsagesSearchEntrySetting> settings)
+        {
+            var xelement = new XElement((XName)"FunctionMacroUsagesSearchEntrySettings");
+            foreach (var setting in settings)
+                xelement.Add((object)SettingToXml(setting));
+            return xelement.ToString();
+        }
+
+        public static IEnumerable<FunctionMacroUsagesSearchEntrySetting> StringToFunctionMacroUsagesSearchEntrySettings(
+            string value)
+        {
+            var searchEntries = new List<FunctionMacroUsagesSearchEntrySetting>();
+            if (string.IsNullOrEmpty(value))
+                return (IEnumerable<FunctionMacroUsagesSearchEntrySetting>)searchEntries;
+            try
+            {
+                foreach (var element in XElement.Parse(value).Elements())
+                {
+                    var setting = XmlToSetting(element);
+                    if (setting != null)
+                        searchEntries.Add(setting);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+            }
+
+            return (IEnumerable<FunctionMacroUsagesSearchEntrySetting>)searchEntries;
+        }
+    }
+
+    public static class FunctionMacroUsagesSearchEntrySettingKeyAccessor
+    {
+        public static IEnumerable<FunctionMacroUsagesSearchEntrySetting> GetSearchEntrySettings(
+            IContextBoundSettingsStore store)
+        {
+            return FunctionMacroUsagesSettingUtil.StringToFunctionMacroUsagesSearchEntrySettings(
+                store.GetValue<FunctionMacroUsagesSettings, string>(
+                    (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.MacroSearchPatterns)));
+        }
+
+        public static void SetSearchEntrySettings(
+            IContextBoundSettingsStore store,
+            IEnumerable<FunctionMacroUsagesSearchEntrySetting> categories)
+        {
+            string str = FunctionMacroUsagesSettingUtil.FunctionMacroUsagesSearchEntrySettingsToString(categories);
+            store.SetValue<FunctionMacroUsagesSettings, string>(
+                (Expression<Func<FunctionMacroUsagesSettings, string>>)(key => key.MacroSearchPatterns), str);
+        }
+    }
+
+    public static class Strings
+    {
+        public const string SearchPattern_Text = "Search Pattern,1.5*";
+        public const string SearchFunctions_Text = "Functions,1*";
+        public const string SearchFunctionTemplates_Text = "Function Templates,1*";
+        public const string SearchVariables_Text = "Variables,1*";
+        public const string SearchVariableTemplates_Text = "Variable Templates,1*";
+        public const string SearchTypeAliases_Text = "Type Aliases,1*";
+        public const string SearchTypeAliasTemplates_Text = "Type Alias Templates,1*";
+    }
+}

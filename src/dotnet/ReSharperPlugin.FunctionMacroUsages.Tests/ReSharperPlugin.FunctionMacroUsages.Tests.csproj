@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net481</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -19,6 +19,10 @@
   <ItemGroup>
     <Compile Remove="test/**/*" />
     <None Include="test/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
   </ItemGroup>
 
 </Project>

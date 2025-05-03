@@ -4,4 +4,6 @@ using JetBrains.ReSharper.Psi;
 namespace ReSharperPlugin.ContextActions;
 
 [ZoneMarker]
-public class ZoneMarker : IRequire<ILanguageCppZone> { }
+public class ZoneMarker : IRequire<ILanguageCppZone>
+{
+}
