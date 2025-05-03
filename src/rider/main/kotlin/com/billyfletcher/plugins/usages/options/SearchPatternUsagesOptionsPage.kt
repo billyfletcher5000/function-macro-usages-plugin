@@ -1,6 +1,6 @@
-package com.billyfletcher.rider.plugins.usages.options
+package com.billyfletcher.plugins.usages.options
 
-import com.billyfletcher.rider.plugins.usages.OptionPagesBundle
+import com.billyfletcher.plugins.usages.OptionPagesBundle
 import com.jetbrains.rider.settings.simple.SimpleOptionsPage
 
 class SearchPatternUsagesOptionsPage : SimpleOptionsPage(
