@@ -1,4 +1,4 @@
-package com.d3t.rider.plugins.usages
+package com.billyfletcher.rider.plugins.usages
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.Nls

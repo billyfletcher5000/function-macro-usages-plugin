@@ -6,7 +6,7 @@
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <method v="2">
-      <option name="Build" default="false" projectName="ReSharperPlugin.FunctionMacroUsages" projectPath="file://$PROJECT_DIR$/src/dotnet/ReSharperPlugin.FunctionMacroUsages/ReSharperPlugin.FunctionMacroUsages.csproj" />
+      <option name="Build" default="false" projectName="ReSharperPlugin.SearchPatternUsages" projectPath="file://$PROJECT_DIR$/src/dotnet/ReSharperPlugin.SearchPatternUsages/ReSharperPlugin.SearchPatternUsages.csproj" />
     </method>
   </configuration>
 </component>

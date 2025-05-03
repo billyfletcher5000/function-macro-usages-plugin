@@ -1,5 +1,5 @@
-$PluginId = "ReSharperPlugin.FunctionMacroUsages"
-$SolutionPath = "$PSScriptRoot\ReSharperPlugin.FunctionMacroUsages.sln"
+$PluginId = "ReSharperPlugin.SearchPatternUsages"
+$SolutionPath = "$PSScriptRoot\ReSharperPlugin.SearchPatternUsages.sln"
 $SourceBasePath = "$PSScriptRoot\src\dotnet"
 
 $VsWhereOutput = [xml] (& "$PSScriptRoot\tools\vswhere.exe" -format xml -products *)

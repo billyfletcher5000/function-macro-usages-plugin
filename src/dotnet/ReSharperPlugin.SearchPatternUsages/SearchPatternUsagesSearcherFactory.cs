@@ -9,14 +9,14 @@ using JetBrains.ReSharper.Psi.Cpp.Language;
 using JetBrains.ReSharper.Psi.Cpp.Symbols;
 using JetBrains.ReSharper.Psi.ExtensionsAPI;
 
-namespace ReSharperPlugin.FunctionMacroUsages
+namespace ReSharperPlugin.SearchPatternUsages
 {
     [PsiComponent(Instantiation.DemandAnyThreadSafe)]
-    public class FunctionMacroUsagesSearcherFactory : DomainSpecificSearcherFactoryBase
+    public class SearchPatternUsagesSearcherFactory : DomainSpecificSearcherFactoryBase
     {
         private readonly ISettingsStore _settingsStore;
 
-        public FunctionMacroUsagesSearcherFactory(ISettingsStore settingsStore)
+        public SearchPatternUsagesSearcherFactory(ISettingsStore settingsStore)
         {
             _settingsStore = settingsStore;
         }
@@ -31,8 +31,8 @@ namespace ReSharperPlugin.FunctionMacroUsages
 
                 var boundSettingsStore = _settingsStore.BindToContextTransient(ContextRange.ApplicationWide);
                 var searchEntrySettings =
-                    FunctionMacroUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(boundSettingsStore);
-                Regex regex = new Regex(FunctionMacroUsagesSettingUtil.RegexPattern);
+                    SearchPatternUsagesSearchEntrySettingKeyAccessor.GetSearchEntrySettings(boundSettingsStore);
+                Regex regex = new Regex(SearchPatternUsagesSettingUtil.RegexPattern);
 
                 var classResolveEntity = fromDeclaredElement.GetEnclosingClass(true);
                 if (classResolveEntity != null)
@@ -44,7 +44,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
                         {
                             var childName = child.Name.ToString();
 
-                            foreach (FunctionMacroUsagesSearchEntrySetting searchEntrySetting in searchEntrySettings)
+                            foreach (SearchPatternUsagesSearchEntrySetting searchEntrySetting in searchEntrySettings)
                             {
                                 string replaced = regex.Replace(searchEntrySetting.SearchPattern, baseElementName);
                                 if (replaced != searchEntrySetting.SearchPattern && String.Equals(replaced, childName,

@@ -5,15 +5,18 @@
         <!-- Keep in sync with ProductVersion in gradle.properties -->
         <SdkVersion>2025.1.0</SdkVersion>
 
-        <Title>FunctionMacroUsages</Title>
-        <Description>d3t Function Macro Usages Plugin</Description>
+        <Title>Search Pattern Usages</Title>
+        <Description>A plugin for adding additional targets to a Find Usages operation via Search Patterns for elements (functions, variables, etc) on the same class.
+            Primarily useful for C++ macro generated functions that can't easily be targeted without finding an existing instance of use.
+            Currently only supports C++ projects.
+        </Description>
 
         <Authors>Billy Fletcher</Authors>
-        <Copyright>Copyright $([System.DateTime]::Now.Year) d3t ltd</Copyright>
+        <Copyright>Copyright $([System.DateTime]::Now.Year) Billy Fletcher</Copyright>
         <PackageTags>resharper plugin</PackageTags>
 
-        <PackageProjectUrl></PackageProjectUrl>
-        <PackageLicenseUrl></PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/billyfletcher5000/search-pattern-usages-plugin</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/billyfletcher5000/search-pattern-usages-plugin/blob/main/LICENSE</PackageLicenseUrl>
         <PackageIconUrl></PackageIconUrl>
     </PropertyGroup>
 
