@@ -1,6 +1,6 @@
 Param(
-    $RootSuffix = "ContextActions",
-    $Version = "9999.0.0"
+    $RootSuffix = "SearchPatternUsages",
+    $Version = "1.0.0"
 )
 
 Set-StrictMode -Version Latest

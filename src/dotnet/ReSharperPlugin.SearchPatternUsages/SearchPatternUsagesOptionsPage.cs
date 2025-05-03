@@ -15,22 +15,23 @@ using JetBrains.Rider.Model.UIAutomation;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using JetBrains.Application.UI.Options.OptionPages;
 using JetBrains.ReSharper.Feature.Services.Cpp.Options;
 using JetBrains.ReSharper.Feature.Services.UI.Validation;
 using JetBrains.ReSharper.UnitTestFramework.Resources;
 
-namespace ReSharperPlugin.FunctionMacroUsages
+namespace ReSharperPlugin.SearchPatternUsages
 {
-    [OptionsPage(PID, "Function Macro Usages", typeof(UnitTestingThemedIcons.Session), ParentId = CppOptionsPage.PID)]
-    public class FunctionMacroUsagesOptionsPage : BeSimpleOptionsPage
+    [OptionsPage(PID, "Search Pattern Usages", typeof(UnitTestingThemedIcons.Session), ParentId = ToolsPage.PID)]
+    public class SearchPatternUsagesOptionsPage : BeSimpleOptionsPage
     {
-        private const string PID = "FunctionMacroUsagesOptions";
+        private const string PID = "SearchPatternUsagesOptions";
 
         private static readonly Func<string, bool> ValidationRegex = (Func<string, bool>)(pattern =>
         {
             try
             {
-                var regex = new Regex(FunctionMacroUsagesSettingUtil.RegexPattern,
+                var regex = new Regex(SearchPatternUsagesSettingUtil.RegexPattern,
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                 return regex.Match(pattern).Success;
             }
@@ -40,7 +41,7 @@ namespace ReSharperPlugin.FunctionMacroUsages
             }
         });
 
-        public FunctionMacroUsagesOptionsPage(
+        public SearchPatternUsagesOptionsPage(
             Lifetime lifetime,
             OptionsPageContext optionsPageContext,
             OptionsSettingsSmartContext smartContext,
@@ -49,8 +50,10 @@ namespace ReSharperPlugin.FunctionMacroUsages
             IThreading threading)
             : base(lifetime, optionsPageContext, smartContext, true)
         {
-            AddHeader("Search");
-            AddCommentText("Search patterns can be added that will look for functions, variables and/or type aliases in the same class/struct as the target of a Find Usages action.\n\nEach pattern should use \"{Foo}\" as a placeholder, it will be replaced by the Find Usage target's name, e.g. a pattern of \"Get{Foo}\" applied to a Find Usages search on a variable \"int Count\" will match to elements on the same class named GetCount.");
+            AddText("Search patterns can be added that will look for functions, variables and/or type aliases in the same class/struct as the target of a Find Usages action.\n\nEach pattern should use \"{Foo}\" as a placeholder, it will be replaced by the Find Usage target's name, e.g. a pattern of \"Get{Foo}\" applied to a Find Usages search on a variable \"int Count\" will match to elements on the same class named GetCount.");
+            AddSpacer();
+            AddSpacer();
+            AddSpacer();
             AddControl(
                 GetSearchEntryTable(lifetime, smartContext, iconHost, threading)
                     .WithDescription("Search Entries", lifetime, GridOrientation.Vertical), true);
@@ -64,11 +67,11 @@ namespace ReSharperPlugin.FunctionMacroUsages
         {
             var margin = BeMargins.Create((BeMarginType.OnePx, 6), (BeMarginType.OnePx, 4), (BeMarginType.None, 0),
                 (BeMarginType.OnePx, 2));
-            var model = new FunctionMacroUsagesModel(lifetime, smartContext, threading);
+            var model = new SearchPatternUsagesModel(lifetime, smartContext, threading);
             var selectionListWithToolbar =
-                model.SelectedEntry.GetBeSingleSelectionListWithToolbar<FunctionMacroUsagesModel.SearchEntry>(
-                    (IListEvents<FunctionMacroUsagesModel.SearchEntry>)model.Entries, lifetime,
-                    (PresentListLine<FunctionMacroUsagesModel.SearchEntry>)((entryLt, entry, properties) =>
+                model.SelectedEntry.GetBeSingleSelectionListWithToolbar<SearchPatternUsagesModel.SearchEntry>(
+                    (IListEvents<SearchPatternUsagesModel.SearchEntry>)model.Entries, lifetime,
+                    (PresentListLine<SearchPatternUsagesModel.SearchEntry>)((entryLt, entry, properties) =>
                     {
                         return new List<BeControl>()
                         {
@@ -94,18 +97,18 @@ namespace ReSharperPlugin.FunctionMacroUsages
                         Strings.ColumnText.SearchTypeAliasTemplates
                     });
             Reload.Advise<Unit>(lifetime, (Action)(() => model.Reset()));
-            var getNewElement = (Func<int, FunctionMacroUsagesModel.SearchEntry>)(i => model.GetNewSearchEntry(i));
+            var getNewElement = (Func<int, SearchPatternUsagesModel.SearchEntry>)(i => model.GetNewSearchEntry(i));
             var addPatternText = "Add Search Pattern";
             return (BeControl)selectionListWithToolbar
-                .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAddAction.ADD, getNewElement,
+                .AddButtonWithListAction<SearchPatternUsagesModel.SearchEntry>(BeListAddAction.ADD, getNewElement,
                     style: BeButtonStyle.DEFAULT, customTooltip: addPatternText)
-                .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.REMOVE,
+                .AddButtonWithListAction<SearchPatternUsagesModel.SearchEntry>(BeListAction.REMOVE,
                     canExecute: (Func<int, bool>)(i => model.CanBeRemoved(i)), customTooltip: "Remove a search entry",
                     style: BeButtonStyle.DEFAULT)
-                .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.MOVE_UP,
+                .AddButtonWithListAction<SearchPatternUsagesModel.SearchEntry>(BeListAction.MOVE_UP,
                     canExecute: (Func<int, bool>)(i => model.CanMoveUp(i)), customTooltip: "Move a search entry up",
                     style: BeButtonStyle.DEFAULT)
-                .AddButtonWithListAction<FunctionMacroUsagesModel.SearchEntry>(BeListAction.MOVE_DOWN,
+                .AddButtonWithListAction<SearchPatternUsagesModel.SearchEntry>(BeListAction.MOVE_DOWN,
                     canExecute: (Func<int, bool>)(i => model.CanMoveDown(i)), customTooltip: "Move a search entry down",
                     style: BeButtonStyle.DEFAULT);
         }

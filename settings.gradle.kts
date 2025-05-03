@@ -17,6 +17,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "ReSharperPlugin.FunctionMacroUsages"
+rootProject.name = "ReSharperPlugin.SearchPatternUsages"
 
 include(":protocol")
