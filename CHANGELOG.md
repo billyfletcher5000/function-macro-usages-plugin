@@ -6,3 +6,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 1.0.0
 - Initial version
+
+## 1.0.1
+- Rebuilt against IntelliJ IDEA SDK v2024.3 for better compatability
